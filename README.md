@@ -195,6 +195,247 @@ app(new MacFactory());
 
 ```
 
+### Builder
+O **Builder** é um padrão de projeto criacional que permite a você construir objetos complexos passo a passo. O padrão permite que você produza diferentes tipos e representações de um objeto usando o mesmo código de construção.
+
+![image](https://github.com/user-attachments/assets/e5eb42f7-39d5-4581-b9b1-857f3107b79e)
+![image](https://github.com/user-attachments/assets/0429fe8b-eb3a-4482-a56d-9000a99f145a)
+
+
+```php
+<?php
+namespace RefactoringGuru\Builder\Conceptual;
+
+// Using the Builder pattern only makes sense when your products are
+// complex and require extensive configuration. The following two
+// following products are related, although they don't have
+// a common interface.
+
+class Car
+{
+  public $seats;
+  public $engine;
+  public $trip_computer;
+  public $gps;
+
+}
+
+
+class Manual
+{
+  public $seats;
+  public $engine;
+  public $trip_compuer;
+  public $gps;
+}
+
+// The builder interface specifies methods for creating the
+// different parts of product objects.
+
+interface Builder
+{
+  public function reset(): void;
+  public function setSeats($number): void;
+  public function setEngine($engine): void;
+  public function setTripComputer($trip_computer = true): void;
+  public function setGPS($gps = true): void;
+}
+
+
+// Concrete builder classes follow the builder
+
+class CarBuilder implements Builder
+{
+  private Car $car;
+
+  public function __construct()
+  {
+    $this->reset();
+  }
+
+  public function reset(): void
+  {
+    $this->car = new Car();
+  }
+
+  public function setSeats($number): void
+  {
+    $this->car->seats = $number;
+
+  }
+
+  public function setEngine($engine): void
+  {
+    $this->car->engine = $engine;
+
+  }
+
+  public function setTripComputer($trip_computer = true): void
+  {
+    $this->car->trip_computer = $trip_computer;
+
+  }
+
+  public function setGPS($gps = true): void
+  {
+    $this->car->gps = $gps;
+
+  }
+
+  // Concrete builders must provide their own
+  // methods to retrieve the results. This is because
+  // various types of builders can create
+  // entirely different products that don't always follow the same
+  // interface. Therefore, such methods cannot be
+  // declared in the builder's interface (at least not in
+  // a static type programming language).
+  //
+  // Generally, after returning the final result to the
+  // client, a builder instance is expected to start
+  // to produce another product. That's why it's
+  // common to call the reset method at the end of the method body
+  // `getProduct` method. However, this behavior is not
+  // mandatory, and you can make your builder wait for
+  // an explicit reset call from the client code
+  // before getting rid of its previous result.
+
+  public function getProduct(): Car
+  {
+    $product = $this->car;
+    $this->reset();
+    return $product;
+  }
+}
+
+
+class CarManualBuilder implements Builder
+{
+  private Manual $manual;
+
+
+  public function __construct()
+  {
+    $this->reset();
+  }
+
+  public function reset(): void
+  {
+    $this->manual = new Manual();
+  }
+
+  public function setSeats($number): void
+  {
+    $this->manual->seats = $number;
+
+  }
+
+  public function setEngine($engine): void
+  {
+    $this->manual->engine = $engine;
+
+  }
+
+  public function setTripComputer($trip_computer = true): void
+  {
+    $this->manual->trip_computer = $trip_computer;
+
+  }
+
+  public function setGPS($gps = true): void
+  {
+    $this->manual->gps = $gps;
+
+  }
+
+  // Concrete builders must provide their own
+  // methods to retrieve the results. This is because
+  // various types of builders can create
+  // entirely different products that don't always follow the same
+  // interface. Therefore, such methods cannot be
+  // declared in the builder's interface (at least not in
+  // a static type programming language).
+  //
+  // Generally, after returning the final result to the
+  // client, a builder instance is expected to start
+  // to produce another product. That's why it's
+  // common to call the reset method at the end of the method body
+  // `getProduct` method. However, this behavior is not
+  // mandatory, and you can make your builder wait for
+  // an explicit reset call from the client code
+  // before getting rid of its previous result.
+
+  public function getProduct(): Manual
+  {
+    $product = $this->manual;
+    $this->reset();
+    return $product;
+  }
+}
+
+// The director is only responsible for carrying out the stages of
+// construction steps in a particular sequence. This helps when
+// producing products according to a specific order or
+// configuration. Strictly speaking, the director class is optional, since the
+// client can control the builders directly.
+
+class Director
+{
+  // The director works with any builder instance that
+  // the client code passes to it. In this way, the
+  // client can change the final type of the newly
+  // assembled. The director can build several variations
+  // of the product using the same construction steps.
+
+  /**
+   * @var Builder
+   */
+  private $builder;
+
+  public function setBuilder(Builder $builder): void
+  {
+    $this->builder = $builder;
+  }
+
+  public function constructSportsCar(): void
+  {
+    $this->builder->reset();
+    $this->builder->setSeats(2);
+    $this->builder->setEngine("Manual");
+    $this->builder->setTripComputer(true);
+    $this->builder->setGPS(true);
+  }
+
+  public function constructSUV(): void
+  {
+    // ... 
+  }
+
+
+}
+
+
+// The client code creates a builder object, passes it to the
+// director and then starts the build process. The final
+// final result is retrieved from the builder object.
+
+function app(Director $director)
+{
+  $builder = new CarBuilder();
+  $director->setBuilder($builder);
+
+
+  echo "Standard basic sport car:\n";
+  $director->constructSportsCar();
+  $car = $builder->getProduct();
+
+  echo json_encode($car);
+
+}
+
+
+$director = new Director();
+app($director);
+```
 
 **FONTES:** [Refactoring Guru](https://refactoring.guru/)
 
